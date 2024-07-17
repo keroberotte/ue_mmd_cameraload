@@ -42,9 +42,16 @@ float ConversionAngle(float rot) {
     return rot * 180 / M_PI;
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="fp"></param>
+/// <param name="n_frame"></param>
+/// <param name="frames"></param>
 void LoadVmdCameraFrames(FILE* fp, int n_frame, frame_t* frames) {
     for (int i = 0; i < n_frame; i++) {
         fread((void*)(&frames[i]), 1, FRAME_SIZE, fp);
+        // int型の値がfloat変数に入った状態になっているので、intに変換したうえでfloatにキャストする
         frames[i].view_angle = *(int*)(&frames[i].view_angle);
         frames[i].rot.x = ConversionAngle(frames[i].rot.x);
         frames[i].rot.y = ConversionAngle(frames[i].rot.y);
@@ -53,6 +60,13 @@ void LoadVmdCameraFrames(FILE* fp, int n_frame, frame_t* frames) {
     Qsort(frames, 0, n_frame - 1);
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="n_original_frame"></param>
+/// <param name="n_interpolate_frame"></param>
+/// <param name="original_frames"></param>
+/// <param name="interpolated_frames"></param>
 void InterpolateVmdCameraFrames(
     int n_original_frame,
     int n_interpolate_frame,
@@ -100,6 +114,12 @@ void InterpolateVmdCameraFrames(
     }
 }
 
+/// <summary>
+/// 受け取ったフレーム情報をcsvファイルにダンプする。デバッグ用
+/// </summary>.
+/// <param name="path">出力ファイルパス</param>
+/// <param name="n_frame">データ長</param>
+/// <param name="frames">フレームデータ</param>
 void DumpVmdCameraFrames(const char* path, int n_frame, frame_t* frames) {
     FILE* wfp = fopen(path, "w");
     char line[1024];

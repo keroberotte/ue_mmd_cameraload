@@ -54,16 +54,22 @@ vector3_t interpolate(vector3_t next_v, vector3_t current_v, float t) {
 	return v;
 }
 
-FVector AMyActor::GetPos(float time) {
-	if (!enable_frame_interpolate || time >= n_frame || last_processed_frame1 != (int)time) {
+/// <summary>
+/// frame_noに対応する位置情報を返却する
+/// </summary>
+/// <param name="time"></param>
+/// <returns></returns>
+FVector AMyActor::GetPos(float frame_no) {
+	if (!enable_frame_interpolate || frame_no >= n_frame || last_processed_frame_for_getpos != (int)frame_no) {
+		// Unityのx, y, z軸はUnreal Engineのy, x, z軸と対応するため、軸の入れ替えを行なう
 		return FVector(
-			frames[(int)time].pos.z,
-			frames[(int)time].pos.x,
-			frames[(int)time].pos.y
+			frames[(int)frame_no].pos.z,
+			frames[(int)frame_no].pos.x,
+			frames[(int)frame_no].pos.y
 		);
 	}
-	vector3_t v = interpolate(frames[(int)time + 1].pos, frames[(int)time].pos, time);
-	last_processed_frame1 = (int)time;
+	vector3_t v = interpolate(frames[(int)frame_no + 1].pos, frames[(int)frame_no].pos, frame_no);
+	last_processed_frame_for_getpos = (int)frame_no;
 	return FVector(
 		v.z,
 		v.x,
@@ -71,43 +77,51 @@ FVector AMyActor::GetPos(float time) {
 	);
 }
 
-FRotator AMyActor::GetRot(float time) {
-	if (!enable_frame_interpolate || time >= n_frame || last_processed_frame2 != (int)time) {
+FRotator AMyActor::GetRot(float frame_no) {
+	if (!enable_frame_interpolate || frame_no >= n_frame || last_processed_frame_for_getrot != (int)frame_no) {
+		// Unityのx, y, z軸はUnreal Engineのy, x, z軸と対応するため、軸の入れ替えを行なう
+		// 回転については厳密に理解したわけではないが、見た目としては近いものになっている
 		FRotator ret = FRotator::MakeFromEuler(FVector(
-			frames[(int)time].rot.z,
-			frames[(int)time].rot.x,
-			frames[(int)time].rot.y
+			frames[(int)frame_no].rot.z,
+			frames[(int)frame_no].rot.x,
+			frames[(int)frame_no].rot.y
 		));
 		ret.Yaw *= -1;
 		return ret;
 	}
-	vector3_t v = interpolate(frames[(int)time + 1].rot, frames[(int)time].rot, time);
+	vector3_t v = interpolate(frames[(int)frame_no + 1].rot, frames[(int)frame_no].rot, frame_no);
 	FRotator ret = FRotator::MakeFromEuler(FVector(
 		v.z,
 		v.x,
 		v.y
 	));
 	ret.Yaw *= -1;
-	last_processed_frame2 = (int)time;
+	last_processed_frame_for_getrot = (int)frame_no;
 	return ret;
 }
 
-float AMyActor::GetFov(float time) {
-	if (!enable_frame_interpolate || time >= n_frame || last_processed_frame3 != (int)time) {
-		return ConvertVerticalFOVToHorizontal(frames[(int)time].view_angle);
+float AMyActor::GetFov(float frame_no) {
+	if (!enable_frame_interpolate || frame_no >= n_frame || last_processed_frame_for_fov != (int)frame_no) {
+		return ConvertVerticalFOVToHorizontal(frames[(int)frame_no].view_angle);
 	}
-	last_processed_frame3 = (int)time;
-	return interpolate(ConvertVerticalFOVToHorizontal(frames[(int)time + 1].view_angle), ConvertVerticalFOVToHorizontal(frames[(int)time].view_angle), time);
+	last_processed_frame_for_fov = (int)frame_no;
+	// Unityは垂直視野角、Unreal Engineは水平視野角を用いているため、変換を行なう
+	return interpolate(ConvertVerticalFOVToHorizontal(frames[(int)frame_no + 1].view_angle), ConvertVerticalFOVToHorizontal(frames[(int)frame_no].view_angle), frame_no);
 }
 
-float AMyActor::GetDistance(float time) {
-	if (!enable_frame_interpolate || time >= n_frame || last_processed_frame4 != (int)time) {
-		return frames[(int)time].distance;
+float AMyActor::GetDistance(float frame_no) {
+	if (!enable_frame_interpolate || frame_no >= n_frame || last_processed_frame_for_distance != (int)frame_no) {
+		return frames[(int)frame_no].distance;
 	}
-	last_processed_frame4 = (int)time;
-	return interpolate(frames[(int)time + 1].distance, frames[(int)time].distance, time);
+	last_processed_frame_for_distance = (int)frame_no;
+	return interpolate(frames[(int)frame_no + 1].distance, frames[(int)frame_no].distance, frame_no);
 }
 
+/// <summary>
+/// 垂直視野角から水平視野角への変換を行なう
+/// </summary>
+/// <param name="VerticalFOV">垂直視野角（degree）</param>
+/// <returns>水平視野角（degree）</returns>
 float AMyActor::ConvertVerticalFOVToHorizontal(float VerticalFOV) const
 {
 	// Convert Vertical FOV to Horizontal FOV

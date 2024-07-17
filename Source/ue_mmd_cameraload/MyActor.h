@@ -13,11 +13,18 @@ class UE_MMD_CAMERALOAD_API AMyActor : public AActor
 {
 	GENERATED_BODY()
 private:
-	bool enable_frame_interpolate = false;;
-	int last_processed_frame1 = -1;
-	int last_processed_frame2 = -1;
-	int last_processed_frame3 = -1;
-	int last_processed_frame4 = -1;
+	/// <summary>
+	/// フレーム補間用フラグ。trueにすると有効になる
+	/// あまり見映えが変わらなかったのでデフォルトでは切っている
+	/// </summary>
+	bool enable_frame_interpolate = false;
+	/// <summary>
+	/// GetPos用最終処理フレーム記憶変数
+	/// </summary>
+	int last_processed_frame_for_getpos = -1;
+	int last_processed_frame_for_getrot = -1;
+	int last_processed_frame_for_fov = -1;
+	int last_processed_frame_for_distance = -1;
 	int n_frame;
 	frame_t* frames;
 	void Load(const char* path);
