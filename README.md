@@ -2,8 +2,6 @@
 
 https://github.com/vrMarimo/mmd_cameraload をUE5に移植したものです。
 
-# 残タスク
+# 使い方
 
-- [ ] ソースコードへのコメント追記等
-- [ ] デモ動画の作成
-- [ ] 使い方説明（ブログ記事？）作成
+[ブログ](https://indefinite.hatenablog.com/archive/2024/07/19)をご参照ください。
